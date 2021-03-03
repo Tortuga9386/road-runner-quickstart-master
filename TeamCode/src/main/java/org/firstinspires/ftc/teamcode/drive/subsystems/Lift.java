@@ -7,17 +7,20 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.drive.opmodes.RobotBase;
 
 public class Lift {
     protected HardwareMap hardwareMap;
     public Telemetry telemetry;
+    private RobotBase opMode;
     public DigitalChannel liftStopStore;
     public DigitalChannel liftStopDrop;
     public DcMotor liftMotor;
     public LiftClaw liftClaw;
 
-    public Lift(HardwareMap hardwareMap, OpMode opMode) {
+    public Lift(HardwareMap hardwareMap, RobotBase opMode) {
         this.hardwareMap = hardwareMap;
+        this.opMode = opMode;
         this.telemetry = opMode.telemetry;
         liftClaw = new LiftClaw(hardwareMap, opMode);
         initHardware();
@@ -34,10 +37,21 @@ public class Lift {
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
+    public void setDropPrepPosition() {
+        liftMotor.setTargetPosition(1500);
+        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        if (liftMotor.getCurrentPosition() > 1000) {
+            //If we go full speed we will overshoot and hit the sensor. Slow down when we get close!
+            liftMotor.setPower(0.3);
+        } else {
+            liftMotor.setPower(1.0);
+        }
+    }
+
     public void setDropPosition() {
         liftMotor.setTargetPosition(1700);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        liftMotor.setPower(0.8);
+        liftMotor.setPower(0.2);
     }
 
     public void setStorePosition() {

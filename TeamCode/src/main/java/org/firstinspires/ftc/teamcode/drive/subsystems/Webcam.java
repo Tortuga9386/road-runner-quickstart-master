@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.drive.subsystems;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -18,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.drive.opmodes.Calibration;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaCurrentGame;
 import org.firstinspires.ftc.robotcore.external.tfod.TfodCurrentGame;
+import org.firstinspires.ftc.teamcode.drive.opmodes.RobotBase;
 
 
 import java.util.ArrayList;
@@ -31,6 +31,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.
 public class Webcam {
     protected HardwareMap hardwareMap;
     public Telemetry telemetry;
+    public RobotBase opMode;
     protected Util util;
     protected Lights lights;
 
@@ -46,7 +47,7 @@ public class Webcam {
     protected VuforiaLocalizer.Parameters localizerParameters;
     VuforiaCurrentGame vuforiaUltimateGoal;
     TfodCurrentGame tfodUltimateGoal;
-    Recognition recognition;
+    //Recognition recognition;
 
     protected OpenGLMatrix lastLocation = null;
     public TensorFlowDetectedObject tensorFlowDetectedObject = new TensorFlowDetectedObject();
@@ -58,11 +59,12 @@ public class Webcam {
         public double left,top,right,bottom;
     }
 
-    public Webcam(HardwareMap hardwareMap, OpMode opMode) {
+    public Webcam(HardwareMap hardwareMap, RobotBase opMode) {
         this.hardwareMap = hardwareMap;
         this.telemetry = opMode.telemetry;
-        this.util = new Util();
-        this.lights = new Lights(hardwareMap, opMode);
+        this.opMode = opMode;
+        this.util = opMode.util;
+        this.lights = opMode.lights;
         initHardware();
     }
 

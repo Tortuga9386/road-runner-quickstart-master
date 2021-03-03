@@ -1,19 +1,21 @@
 package org.firstinspires.ftc.teamcode.drive.subsystems;
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.drive.opmodes.RobotBase;
 
 public class Lights {
     protected HardwareMap hardwareMap;
     public Telemetry telemetry;
+    private RobotBase opMode;
     public RevBlinkinLedDriver blinkinLedDriver;
 
-    public Lights(HardwareMap hardwareMap, OpMode opMode) {
+    public Lights(HardwareMap hardwareMap, RobotBase opMode) {
         this.hardwareMap = hardwareMap;
         this.telemetry = opMode.telemetry;
+        this.opMode = opMode;
         initHardware();
     }
 

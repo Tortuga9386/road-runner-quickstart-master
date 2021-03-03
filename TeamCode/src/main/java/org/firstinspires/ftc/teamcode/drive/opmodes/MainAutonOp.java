@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.drive.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -56,9 +57,9 @@ public class MainAutonOp extends RobotBase {
     private long iterationCounter = 0;
     double dropWobbleTime = 2.0;
     ElapsedTime dropWobbleTimer = new ElapsedTime();
-    double shooterTime = 2.0;
+    double shooterTime = 0.0;
     ElapsedTime shooterTimer = new ElapsedTime();
-    double shooterTriggerTime = 2.0;
+    double shooterTriggerTime = 3.2;
     ElapsedTime shooterTriggerTimer = new ElapsedTime();
 
     /**
@@ -122,63 +123,71 @@ public class MainAutonOp extends RobotBase {
 
                 if (!rrdrive.isBusy()) {
                     telemetry.addData("Starting driveToWobbleDrop autopath: ", time.seconds());
-                    rrdrive.setPoseEstimate(autoPath.startPose);
-                    rrdrive.followTrajectory(autoPath.driveToWobbleDrop);
+                    try {
+                        rrdrive.setPoseEstimate(autoPath.startPose);
+                        rrdrive.followTrajectory(autoPath.driveToWobbleDrop);
+                    } catch (Exception e) {
+                        telemetry.addData("Error running ", pathName.toString() + " driveToWobbleDrop");
+                        telemetry.addData("Exception Message: ",e.toString());
+                        return IDLE;
+                    }
                     return DRIVE_TO_WOBBLE;
                 }
                 break;
             case DRIVE_TO_WOBBLE:
-                //Get ready to drop
-                lift.setDropPosition();
+                //RoadRunner sets drop prep position on the way
+                //RoadRunner sets drop position on the way
 
-                // Check if the drive class is still busy following the trajectory
-                // If not, move onto the next state, DROP_WOBBLE
-                if (!rrdrive.isBusy() && !lift.isBusy()) {
-                    // Start the wait timer once we switch to the next state
-                    // This is so we can track how long we've been in the DROP_WOBBLE state
-                    dropWobbleTimer.reset();
-                    return DROP_WOBBLE;
-                }
-                break;
+                return DROP_WOBBLE;
             case DROP_WOBBLE:
-                //Drop wobble
-                lift.liftClaw.open();
+                //RoadRunner drops wobble on the way
 
-                // Check if the timer has exceeded the specified wait time
-                // If so, move on to the DRIVE_TO_SHOOT state
-                if (dropWobbleTimer.seconds() >= dropWobbleTime) {
-                    //lift.setStorePosition();
-                    rrdrive.followTrajectory(autoPath.driveToShoot);
+                if (!rrdrive.isBusy()) {
+                    try {
+                        rrdrive.followTrajectory(autoPath.driveToShoot);
+                    } catch (Exception e) {
+                        telemetry.addData("Error running ", pathName.toString() + " driveToShoot");
+                        telemetry.addData("Exception Message: ",e.toString());
+                        return IDLE;
+                    }
                     return DRIVE_TO_SHOOT;
                 }
                 break;
             case DRIVE_TO_SHOOT:
+                //RoadRunner retracts the lift on the way
+                //RoadRunner spins up the flywheel on the way
+
                 if (!rrdrive.isBusy()) {
-                    // Start the wait timer once we switch to the next state
-                    // This is so we can track how long we've been in the SHOOT state
-                    shooterTimer.reset();
+                    // Start the wait timer once we switch to the next state, this is so we can track how long we've been in the SHOOT state
+                    shooterTriggerTimer.reset();
                     return SHOOT;
                 }
                 break;
             case SHOOT:
-                //shooter.run();
-                if (shooterTimer.seconds() >= shooterTime) {
-                    shooterTriggerTimer.reset();
-                    //shooter.triggerrun();
+                //Shooter flywheel was spun up by roadrunner on the way
+                if (!rrdrive.isBusy()) {
+                    shooter.triggerrun();
                 }
+
                 // Check if the timer has exceeded the specified wait time
                 // If so, move on to the DRIVE_TO_PARK state
                 if (shooterTriggerTimer.seconds() >= shooterTriggerTime) {
-                    //shooter.triggerstop();
-                    //shooter.stop();
-                    rrdrive.followTrajectory(autoPath.driveToPark);
+                    //Shooter and trigger are stopped on the way by roadrunner
+                    try {
+                        rrdrive.followTrajectory(autoPath.driveToPark);
+                    } catch (Exception e) {
+                        telemetry.addData("Error running ", pathName.toString() + " driveToPark");
+                        telemetry.addData("Exception Message: ",e.toString());
+                        return IDLE;
+                    }
                     return DRIVE_TO_PARK;
                 }
-                //return IDLE;
                 break;
             case DRIVE_TO_PARK:
                 return PARK;
             case PARK:
+                lift.stop();
+                shooter.triggerstop();
                 return IDLE;
             default:
                 break;

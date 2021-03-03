@@ -52,14 +52,10 @@ public class RobotBase extends OpMode
         shooter = new Shooter(hardwareMap, this);
         lift = new Lift(hardwareMap, this);
         util = new Util();
-
-        /*
-            Lights are only used by webcam, initialize them there only?
-         */
         lights = new Lights(hardwareMap, this);
         lights.setPattern("GREEN");
 
-        //Enable IMU for angles
+        //Enable IMU for TFOD
         if (INITIALIZE_WEBCAM) {
             webcam = new Webcam(hardwareMap, this);
         }

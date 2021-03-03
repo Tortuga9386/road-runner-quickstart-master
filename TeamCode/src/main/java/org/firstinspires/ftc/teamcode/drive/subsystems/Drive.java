@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.drive.opmodes.Calibration;
+import org.firstinspires.ftc.teamcode.drive.opmodes.RobotBase;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,6 +17,7 @@ public class Drive {
     public static double  RAMP_DRIVE_DURATION   = 0.02;
     protected HardwareMap hardwareMap;
     public Telemetry telemetry;
+    private RobotBase opMode;
     protected Util util;
     public DcMotor leftFrontWheel;
     public DcMotor rightFrontWheel;
@@ -27,9 +29,10 @@ public class Drive {
     private double prevRFWPower = 0;
     private double prevLFWPower = 0;
 
-    public Drive(HardwareMap hardwareMap, OpMode opMode) {
+    public Drive(HardwareMap hardwareMap, RobotBase opMode) {
         this.hardwareMap = hardwareMap;
         this.telemetry = opMode.telemetry;
+        this.opMode = opMode;
         this.util = new Util();
         initHardware();
     }

@@ -5,17 +5,20 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.drive.opmodes.RobotBase;
 
 public class ControlHub {
     protected HardwareMap hardwareMap;
     public Telemetry telemetry;
+    private RobotBase opMode;
     public BNO055IMU imu;
     protected BNO055IMU.Parameters parameters;
     public boolean initialized = false;
 
-    public ControlHub(HardwareMap hardwareMap, OpMode opMode) {
+    public ControlHub(HardwareMap hardwareMap, RobotBase opMode) {
         this.hardwareMap = hardwareMap;
         this.telemetry = opMode.telemetry;
+        this.opMode = opMode;
         initHardware();
     }
 

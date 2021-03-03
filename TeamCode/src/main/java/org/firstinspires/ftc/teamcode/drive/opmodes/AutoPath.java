@@ -12,16 +12,19 @@ import org.firstinspires.ftc.teamcode.drive.opmodes.MainAutonOp.PathName;
 
 public class AutoPath {
     private HardwareMap hardwareMap;
+    private RobotBase robotBase;
     private Telemetry telemetry;
     private SampleMecanumDrive mecanumDrive;
+
     public Pose2d startPose;
     public Trajectory driveToWobbleDrop;
     public Trajectory driveToShoot;
     public Trajectory driveToPark;
 
-    public AutoPath(HardwareMap hardwareMap, OpMode opMode) {
+    public AutoPath(HardwareMap hardwareMap, RobotBase opMode) {
         this.hardwareMap = hardwareMap;
         this.telemetry = opMode.telemetry;
+        this.robotBase = opMode;
     }
     public void getAutoPaths(PathName pathName) {
         mecanumDrive = new SampleMecanumDrive(hardwareMap);
@@ -163,11 +166,24 @@ public class AutoPath {
                         .build();
 
                 driveToShoot = mecanumDrive.trajectoryBuilder(driveToWobbleDrop.end())
-                        .splineTo(new Vector2d(0.0, -12.0), 0)
+                        .strafeTo(new Vector2d(0.0, -40.0))
+                        .addTemporalMarker(0.15, () -> {
+                            //Retract the lift on the way
+                            robotBase.lift.setStorePosition();
+                        })
+                        .addTemporalMarker(0.2, () -> {
+                            //Start shooter on the way
+                            robotBase.shooter.run();
+                        })
                         .build();
 
                 driveToPark = mecanumDrive.trajectoryBuilder(driveToShoot.end())
-                        .lineTo(new Vector2d(12.0, -12.0))
+                        .strafeTo(new Vector2d(12.0, -40.0))
+                        .addTemporalMarker(0, () -> {
+                            //Stop any activity on way to park
+                            robotBase.shooter.triggerstop();
+                            robotBase.shooter.stop();
+                        })
                         .build();
                 break;
 
@@ -180,11 +196,24 @@ public class AutoPath {
                         .build();
 
                 driveToShoot = mecanumDrive.trajectoryBuilder(driveToWobbleDrop.end())
-                        .splineTo(new Vector2d(1.0, -10.0), 0)
+                        .strafeTo(new Vector2d(0.0, -40.0))
+                        .addTemporalMarker(0.4, () -> {
+                            //Start shooter on the way
+                            robotBase.shooter.run();
+                        })
+                        .addTemporalMarker(0.5, () -> {
+                            //Retract the lift on the way
+                            robotBase.lift.setStorePosition();
+                        })
                         .build();
 
                 driveToPark = mecanumDrive.trajectoryBuilder(driveToShoot.end())
-                        .lineTo(new Vector2d(10, -10.0))
+                        .strafeTo(new Vector2d(12.0, -40.0))
+                        .addTemporalMarker(0, () -> {
+                            //Stop any activity on way to park
+                            robotBase.shooter.triggerstop();
+                            robotBase.shooter.stop();
+                        })
                         .build();
                 break;
 
@@ -197,42 +226,76 @@ public class AutoPath {
                         .build();
 
                 driveToShoot = mecanumDrive.trajectoryBuilder(driveToWobbleDrop.end())
-                        .splineTo(new Vector2d( 1,-10 ), 270)
+                        .strafeTo(new Vector2d(0.0, -40.0))
+                        .addTemporalMarker(0.2, () -> {
+                            //Start shooter on the way
+                            robotBase.shooter.run();
+                        })
+                        .addTemporalMarker(0.3, () -> {
+                            //Retract the lift on the way
+                            robotBase.lift.setStorePosition();
+                        })
                         .build();
 
                 driveToPark = mecanumDrive.trajectoryBuilder(driveToShoot.end())
-                        .lineTo(new Vector2d(10.0, -10.0))
+                        .strafeTo(new Vector2d(12.0, -40.0))
+                        .addTemporalMarker(0, () -> {
+                            //Stop any activity on way to park
+                            robotBase.shooter.triggerstop();
+                            robotBase.shooter.stop();
+                        })
                         .build();
                 break;
+
 
                 /***************************************************************************
 
                  RED RIGHT
 
                  ***************************************************************************/
-            case RED_RIGHT_NONE:
-                startPose = new Pose2d(-60.0,-50,0);
+            case RED_RIGHT_QUAD:
+                startPose = new Pose2d(-60,-50,0.0);
                 mecanumDrive.setPoseEstimate(startPose);
                 driveToWobbleDrop = mecanumDrive.trajectoryBuilder(startPose)
-                        .splineTo(new Vector2d(-36.0, -60.0), 0)
+                        //First add the path segments to follow
                         .splineTo(new Vector2d(0.0, -60.0), 0)
+                        .splineTo(new Vector2d(42.0, -61.0), 0)
+                        //.splineToLinearHeading(new Pose2d(-4.0, -40.0,0),0) //Dont need this as our end direction is sufficient to avoid wobble collision
+
+                        //Next add the activities during the path (THESE ARE TIME BASED!)
+                        .addTemporalMarker(1.5, () -> {
+                            //Prep the wobble to drop on the way
+                            robotBase.lift.setDropPrepPosition();
+                        })
+                        .addTemporalMarker(2.0, () -> {
+                            //Dump that wobble!
+                            robotBase.lift.setDropPosition();
+                        })
+                        .addTemporalMarker(2.8, () -> {
+                            //Dump that wobble!
+                            robotBase.lift.liftClaw.open();
+                        })
                         .build();
 
-                // Works with no shoot
-//                driveToShoot = mecanumDrive.trajectoryBuilder(driveToWobbleDrop.end())
-//                        .strafeTo(new Vector2d(-18.0, -60))
-                        //.build();
-
-                        driveToShoot = mecanumDrive.trajectoryBuilder(driveToWobbleDrop.end())
-                                .strafeTo(new Vector2d(-18.0, -60))
-                                .splineToConstantHeading(new Vector2d(-18.0, -60),  Math.toRadians(0))
-                        //.splineTo(new Vector2d(-12.0, -60.0), Math.toRadians(0))
-                        //.splineTo(new Vector2d(-12.0, -56.0), Math.toRadians(90))
-                        //.splineTo(new Vector2d(-1.0, -12.0), Math.toRadians(0))
+                driveToShoot = mecanumDrive.trajectoryBuilder(driveToWobbleDrop.end())
+                        .strafeTo(new Vector2d(0.0, -40.0))
+                        .addTemporalMarker(0.15, () -> {
+                            //Retract the lift on the way
+                            robotBase.lift.setStorePosition();
+                        })
+                        .addTemporalMarker(0.2, () -> {
+                            //Start shooter on the way
+                            robotBase.shooter.run();
+                        })
                         .build();
 
                 driveToPark = mecanumDrive.trajectoryBuilder(driveToShoot.end())
-                        .strafeTo(new Vector2d(12, -12.0))
+                        .strafeTo(new Vector2d(12.0, -40.0))
+                        .addTemporalMarker(0, () -> {
+                            //Stop any activity on way to park
+                            robotBase.shooter.triggerstop();
+                            robotBase.shooter.stop();
+                        })
                         .build();
                 break;
 
@@ -240,37 +303,93 @@ public class AutoPath {
                 startPose = new Pose2d(-60,-50,0.0);
                 mecanumDrive.setPoseEstimate(startPose);
                 driveToWobbleDrop = mecanumDrive.trajectoryBuilder(startPose)
-                        .splineTo(new Vector2d(-24, -60), 0 )
-                        .splineTo(new Vector2d(23, -40), 0)
+                        //First add the path segments to follow
+                        .splineTo(new Vector2d(-24, -52), 0 )
+                        .splineTo(new Vector2d(18, -40), 0)
+                        //.splineToLinearHeading(new Pose2d(-4.0, -40.0,0),0) //Dont need this, we are driving straight back to shoot.
+
+                        //Next add the activities during the path (THESE ARE TIME BASED!)
+                        .addTemporalMarker(1.0, () -> {
+                            //Prep the wobble to drop on the way
+                            robotBase.lift.setDropPrepPosition();
+                        })
+                        .addTemporalMarker(2.0, () -> {
+                            //Dump that wobble!
+                            robotBase.lift.setDropPosition();
+                        })
+                        .addTemporalMarker(2.3, () -> {
+                            //Dump that wobble!
+                            robotBase.lift.liftClaw.open();
+                        })
                         .build();
 
                 driveToShoot = mecanumDrive.trajectoryBuilder(driveToWobbleDrop.end())
-                        .strafeTo(new Vector2d(-18, -40))
-                        .splineToConstantHeading(new Vector2d(-5.0, -40.0), Math.toRadians(0))
-                        //.splineTo(new Vector2d(-1.0, -12.0), Math.toRadians(0))
+                        .strafeTo(new Vector2d(0.0, -40.0))
+                        .addTemporalMarker(0.4, () -> {
+                            //Start shooter on the way
+                            robotBase.shooter.run();
+                        })
+                        .addTemporalMarker(0.5, () -> {
+                            //Retract the lift on the way
+                            robotBase.lift.setStorePosition();
+                        })
                         .build();
 
                 driveToPark = mecanumDrive.trajectoryBuilder(driveToShoot.end())
-                        .strafeTo(new Vector2d(12, -12.0))
+                        .strafeTo(new Vector2d(12.0, -40.0))
+                        .addTemporalMarker(0, () -> {
+                            //Stop any activity on way to park
+                            robotBase.shooter.triggerstop();
+                            robotBase.shooter.stop();
+                        })
                         .build();
                 break;
 
-            case RED_RIGHT_QUAD:
-                startPose = new Pose2d(-60,-50,0.0);
+            case RED_RIGHT_NONE:
+                startPose = new Pose2d(-60.0,-50,0);
                 mecanumDrive.setPoseEstimate(startPose);
+
                 driveToWobbleDrop = mecanumDrive.trajectoryBuilder(startPose)
-                        .splineTo(new Vector2d(0, -60), 0)
-                        .lineTo(new Vector2d(45,-60))
+                        //First add the path segments to follow
+                        .splineTo(new Vector2d(-36.0, -60.0), 0)
+                        .splineTo(new Vector2d(-6.0, -60.0), 0)
+                        //.lineToSplineHeading(new Pose2d(-18.0, -60,0)) //TODO Passes Continuity Test, have to test if its actually better
+                        .splineToLinearHeading(new Pose2d(-8.0, -56.0,0),0)
+
+                        //Next add the activities during the path (THESE ARE TIME BASED!)
+                        .addTemporalMarker(1.0, () -> {
+                            //Prep the wobble to drop on the way
+                            robotBase.lift.setDropPrepPosition();
+                        })
+                        .addTemporalMarker(2.0, () -> {
+                            //Dump that wobble!
+                            robotBase.lift.setDropPosition();
+                        })
+                        .addTemporalMarker(2.1, () -> {
+                            //Dump that wobble!
+                            robotBase.lift.liftClaw.open();
+                        })
                         .build();
 
                 driveToShoot = mecanumDrive.trajectoryBuilder(driveToWobbleDrop.end())
-                        .strafeTo(new Vector2d(-18, -60))
-                        //.splineTo(new Vector2d(12, -60), Math.toRadians(90))
-                        //.splineTo(new Vector2d(-1,-12), Math.toRadians(0))
+                        .strafeTo(new Vector2d(0.0, -40.0))
+                        .addTemporalMarker(0.2, () -> {
+                            //Start shooter on the way
+                            robotBase.shooter.run();
+                        })
+                        .addTemporalMarker(0.3, () -> {
+                            //Retract the lift on the way
+                            robotBase.lift.setStorePosition();
+                        })
                         .build();
 
                 driveToPark = mecanumDrive.trajectoryBuilder(driveToShoot.end())
-                        .strafeTo(new Vector2d(12, -12.0))
+                        .strafeTo(new Vector2d(12.0, -40.0))
+                        .addTemporalMarker(0, () -> {
+                            //Stop any activity on way to park
+                            robotBase.shooter.triggerstop();
+                            robotBase.shooter.stop();
+                        })
                         .build();
                 break;
 
