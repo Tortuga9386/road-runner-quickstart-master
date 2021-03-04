@@ -19,5 +19,6 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.arcrobotics:ftclib:1.1.6' // core
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 }

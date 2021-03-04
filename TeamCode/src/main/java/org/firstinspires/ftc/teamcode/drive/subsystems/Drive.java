@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.drive.subsystems;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
@@ -17,7 +16,7 @@ public class Drive {
     public static double  RAMP_DRIVE_DURATION   = 0.02;
     protected HardwareMap hardwareMap;
     public Telemetry telemetry;
-    private RobotBase opMode;
+    private RobotBase robotBase;
     protected Util util;
     public DcMotor leftFrontWheel;
     public DcMotor rightFrontWheel;
@@ -31,8 +30,8 @@ public class Drive {
 
     public Drive(HardwareMap hardwareMap, RobotBase opMode) {
         this.hardwareMap = hardwareMap;
-        this.telemetry = opMode.telemetry;
-        this.opMode = opMode;
+        this.robotBase = opMode;
+        this.telemetry = robotBase.telemetry;
         this.util = new Util();
         initHardware();
     }
@@ -73,7 +72,7 @@ public class Drive {
      * basicDrive takes inputs directly from gamepad and translates them to chassis movement.
      * This is sometimes called an arcade drive.
      */
-    public void basicDrive(double moveX, double moveY, double moveRotation) {
+    public void driveRobotCentric(double moveX, double moveY, double moveRotation) {
 
         double x  = util.roundTwo(moveX);
         double y  = -util.roundTwo(moveY);      // Remember, this is reversed!

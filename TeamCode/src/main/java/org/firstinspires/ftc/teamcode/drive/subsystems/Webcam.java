@@ -31,7 +31,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.
 public class Webcam {
     protected HardwareMap hardwareMap;
     public Telemetry telemetry;
-    public RobotBase opMode;
+    public RobotBase robotBase;
     protected Util util;
     protected Lights lights;
 
@@ -61,10 +61,10 @@ public class Webcam {
 
     public Webcam(HardwareMap hardwareMap, RobotBase opMode) {
         this.hardwareMap = hardwareMap;
-        this.telemetry = opMode.telemetry;
-        this.opMode = opMode;
-        this.util = opMode.util;
-        this.lights = opMode.lights;
+        this.robotBase = opMode;
+        this.telemetry = robotBase.telemetry;
+        this.util = robotBase.util;
+        this.lights = robotBase.lights;
         initHardware();
     }
 
@@ -333,8 +333,8 @@ public class Webcam {
             sampleCount++;
 
             //Arena area is sometimes dark, make sure the lights are on, and give them time to update
-            //lights.setPattern("WHITE");
-            //util.sleep(Calibration.BLINKIN_UPDATE_LOCKOUT);
+            lights.setPattern("WHITE");
+            util.sleep(Calibration.BLINKIN_UPDATE_LOCKOUT);
 
             //Get a list of recognitions from TFOD.
             recognitions = tfodUltimateGoal.getRecognitions();

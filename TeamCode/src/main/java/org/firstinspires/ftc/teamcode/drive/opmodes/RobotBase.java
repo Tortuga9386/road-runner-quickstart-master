@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode.drive.opmodes;
 
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.drive.subsystems.*;
+
+import java.util.List;
 
 /**
  * This is NOT an opmode.
@@ -22,11 +25,16 @@ public class RobotBase extends OpMode
     protected boolean INITIALIZE_WEBCAM         = false;
     protected boolean INITIALIZE_IMU            = false;
     protected boolean INITIALIZE_LSA            = false;
+    public    boolean ARC_DRIVE_ROBOT           = false;
+    public    boolean ARC_DRIVE_FIELD           = false;
+    public    boolean turtleMode                = false;
+
 
 
     //Make subsystems available to all class extensions
     public MenuController menu_controller;
     public Drive drive;
+    public ArcRoboticsDrive arcDrive;
     public Intake intake;
     public Shooter shooter;
     public Lift lift;
@@ -45,9 +53,16 @@ public class RobotBase extends OpMode
         //Read calibration constants
         //new Calibration().readFromFile();
 
+        //1 of 2 >> Initialize sensor bulk read, then after all the hardware maps are set below, enable BulkCachingMode.AUTO
+        List<LynxModule> hubs = hardwareMap.getAll(LynxModule.class);
+
         //Initialize subsystems
         menu_controller = new MenuController(new Calibration());
-        drive = new Drive(hardwareMap, this);
+//        if (ARC_DRIVE_ROBOT || ARC_DRIVE_FIELD) {
+//            arcDrive = new ArcRoboticsDrive(hardwareMap, this);
+//        } else {
+            drive = new Drive(hardwareMap, this);
+//        }
         intake = new Intake(hardwareMap, this);
         shooter = new Shooter(hardwareMap, this);
         lift = new Lift(hardwareMap, this);
@@ -68,6 +83,11 @@ public class RobotBase extends OpMode
         //Enable Stand Alone Localization (NOT ROADRUNNER)
         if (INITIALIZE_LSA) {
             localizationSA = new LocalizationSA(hardwareMap, this);
+        }
+
+        //2 of 2 >> All the hardware maps are set above, now enable BulkCachingMode.AUTO on hubs
+        for (LynxModule hub : hubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
     }

@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.drive.opmodes;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -57,10 +55,10 @@ public class MainAutonOp extends RobotBase {
     private long iterationCounter = 0;
     double dropWobbleTime = 2.0;
     ElapsedTime dropWobbleTimer = new ElapsedTime();
-    double shooterTime = 0.0;
-    ElapsedTime shooterTimer = new ElapsedTime();
     double shooterTriggerTime = 3.2;
     ElapsedTime shooterTriggerTimer = new ElapsedTime();
+    double parkTime = 2.0;
+    ElapsedTime parkTimer = new ElapsedTime();
 
     /**
      * Constructor
@@ -81,6 +79,7 @@ public class MainAutonOp extends RobotBase {
         iterationCounter = 1;
 
         lift.liftClaw.close();
+        intake.setIntakeFlipperUp();
         if (!Calibration.DEBUG) {
             AutoTransitioner.transitionOnStop(this, "TeleOp");
         }
@@ -166,7 +165,7 @@ public class MainAutonOp extends RobotBase {
             case SHOOT:
                 //Shooter flywheel was spun up by roadrunner on the way
                 if (!rrdrive.isBusy()) {
-                    shooter.triggerrun();
+                    shooter.triggerRun();
                 }
 
                 // Check if the timer has exceeded the specified wait time
@@ -180,15 +179,23 @@ public class MainAutonOp extends RobotBase {
                         telemetry.addData("Exception Message: ",e.toString());
                         return IDLE;
                     }
+                    parkTimer.reset();
                     return DRIVE_TO_PARK;
                 }
                 break;
             case DRIVE_TO_PARK:
                 return PARK;
             case PARK:
-                lift.stop();
-                shooter.triggerstop();
-                return IDLE;
+                if (parkTimer.seconds() >= parkTime) {
+                    lift.stop();
+                    shooter.triggerStop();
+                    return IDLE;
+                } else {
+                    lift.calibrate();
+                    shooter.triggerBackOff();
+                    intake.setIntakeFlipperDown();
+                }
+                break;
             default:
                 break;
         }

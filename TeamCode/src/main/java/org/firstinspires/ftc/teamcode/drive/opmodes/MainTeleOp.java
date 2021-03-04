@@ -11,9 +11,13 @@ import org.firstinspires.ftc.teamcode.drive.subsystems.LocalGamepad;
 @TeleOp(name="TeleOp", group="teleop")
 public class MainTeleOp extends RobotBase
 {
-    private ElapsedTime runtime = new ElapsedTime();
-    private LocalGamepad localGamepad1, localGamepad2;
-    private double turtleToggleUpdate = 0.0;
+    private   ElapsedTime   runtime = new ElapsedTime();
+    private   LocalGamepad  localGamepad1, localGamepad2;
+    private   double        turtleToggleUpdate = 0.0;
+    protected boolean       INITIALIZE_IMU = true;
+    protected boolean       ARC_DRIVE_ROBOT = false;
+    protected boolean       ARC_DRIVE_FIELD = false;
+    protected double        globalAngle = 0.0;
 
     public MainTeleOp() {}
     
@@ -25,7 +29,6 @@ public class MainTeleOp extends RobotBase
         super.init();
         localGamepad1 = new LocalGamepad(gamepad1);
         localGamepad2 = new LocalGamepad(gamepad2);
-
         telemetry.addData("Status", "Initialized");
     }
 
@@ -59,55 +62,82 @@ public class MainTeleOp extends RobotBase
         shooter_loop();
         lift_loop();
         light_loop();
+        imu_loop();
         telemetry_loop();
     }
 
     protected void drive_loop() {
         
         if (turtleToggleUpdate + Calibration.MIN_TOGGLE_TIME<=runtime.seconds()) {
-            if (gamepad1.a && !drive.turtleMode){
-                drive.turtleMode  = true;
+            if (gamepad1.a && !this.turtleMode){
+                updateTurtleMode(true);
                 turtleToggleUpdate = runtime.seconds();
-            } else if (gamepad1.a && drive.turtleMode) {
-                drive.turtleMode  = false;
+            } else if (gamepad1.a && this.turtleMode) {
+                updateTurtleMode(false);
                 turtleToggleUpdate = runtime.seconds();
             }
         }
-        telemetry.addData("Turtle Mode On", drive.turtleMode);
+        telemetry.addData("Turtle Mode On", this.turtleMode);
         
         //Use localGamepad1.XasCircle and localGamepad1.YasCircle to prevent skewing in corners of joystick square
-        drive.basicDrive(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x);
+//        if (ARC_DRIVE_ROBOT && arcDrive != null) {
+//            telemetry.addData("Drive Mode", "arcDrive.driveRobotCentric");
+//            arcDrive.driveRobotCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x);
+//        } else if (ARC_DRIVE_FIELD && arcDrive != null) {
+//            telemetry.addData("Drive Mode", "arcDrive.driveFieldCentric");
+//            arcDrive.driveFieldCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x, globalAngle);
+//        } else {
+            telemetry.addData("Drive Mode", "Original Crispy");
+            drive.driveRobotCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x);
+//        }
     }
-
+    public void updateTurtleMode(boolean newTurtleMode) {
+        this.turtleMode = newTurtleMode;
+        if (arcDrive!=null) {
+            //arcDrive.turtleMode = newTurtleMode;
+        } else {
+            drive.turtleMode  = newTurtleMode;
+        }
+    }
 
     protected void intake_loop() {
         //Activate intake based on left trigger
-        if (gamepad1.left_trigger == 1){
+        if (gamepad1.left_trigger == 1) {
             intake.run();
             telemetry.addData("Intake Power", "ON");
-        }else if(gamepad1.left_bumper){
+        } else if(gamepad1.left_bumper) {
             intake.reverse();
-        }
-        else {
+            telemetry.addData("Intake Power", "REVERSE");
+        } else {
             intake.stop();
             telemetry.addData("Intake Power", "OFF");
+        }
+
+        if (gamepad1.b) {
+            intake.setIntakeFlipperUp();
+            telemetry.addData("Intake Flipper", "UP");
+        } else {
+            intake.setIntakeFlipperDown();
+            telemetry.addData("Intake Flipper", "DOWN");
         }
 
     }
 
     protected void shooter_loop() {
         //Activate flywheel and shooter servo based on button combos
-        if (gamepad1.right_trigger > 0.0){
+        if (gamepad1.right_trigger == 1){
             shooter.run();
+            telemetry.addData("Shooter Power", "ON");
         } else {
             //Turn off shooter flywheel if right trigger is not held down
             shooter.stop();
+            telemetry.addData("Shooter Power", "OFF");
         }
         if (gamepad1.right_bumper) {
-            shooter.triggerrun();
+            shooter.triggerRun();
             telemetry.addData("Shooter Servo Power", true);
         } else {
-            shooter.triggerstop();
+            shooter.triggerStop();
         }
     
     }
@@ -116,16 +146,19 @@ public class MainTeleOp extends RobotBase
         //Run lift and lift claw based on button combos
         if (gamepad1.dpad_up){
             lift.setDropPosition();
-            telemetry.addData("lift setDropPosition", true);
+            telemetry.addData("Lift Action", "lift.setDropPosition");
         } else if (gamepad1.dpad_down){
             lift.setStorePosition();
-            telemetry.addData("lift setStorePosition", true);
+            telemetry.addData("Lift Action", "lift.setStorePosition");
+        } else if (gamepad1.x) {
+            lift.calibrate(); //Emergency lift reset!
+            telemetry.addData("Lift Action", "lift.calibrate");
         } else {
             lift.stop();
-            telemetry.addData("lift stop", true);
+            telemetry.addData("Lift Action", "lift.stop");
         }
-        telemetry.addData("Lift current Position", lift.liftMotor.getCurrentPosition());
-        telemetry.addData("Lift store sensor", lift.liftStopStore.getState());
+        telemetry.addData("Lift Position", lift.liftMotor.getCurrentPosition());
+        telemetry.addData("Lift Sensor", lift.liftStopStoreState());
 
         if (gamepad1.dpad_left) {
             lift.liftClaw.open();
@@ -134,6 +167,7 @@ public class MainTeleOp extends RobotBase
             lift.liftClaw.close();
             telemetry.addData("Lift Servo", "CLOSED");
         }
+
     }
 
     protected void light_loop() {
@@ -154,18 +188,23 @@ public class MainTeleOp extends RobotBase
         lights.setPattern(lightPattern);
     }
 
+    protected void imu_loop() {
+        if (INITIALIZE_IMU && controlHub!=null && controlHub.initialized) {
+            Orientation allAngles = controlHub.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            globalAngle = allAngles.firstAngle;
+        }
+    }
+
     protected void telemetry_loop() {
 
-        if (INITIALIZE_LSA && localizationSA.initialized) {
+        if (INITIALIZE_LSA && localizationSA!= null && localizationSA.initialized) {
             // Show the elapsed run time, magnitude, direction and wheel power.
             telemetry.addData("X Position", util.getCountsAsInches(localizationSA.globalPositionUpdate.returnXCoordinate()));
             telemetry.addData("Y Position", util.getCountsAsInches(localizationSA.globalPositionUpdate.returnYCoordinate()));
             telemetry.addData("Orientation (Radians)", util.roundTwo(localizationSA.globalPositionUpdate.returnOrientationScaledRadians()));
         }
 
-        if (INITIALIZE_IMU && controlHub.initialized) {
-            Orientation allAngles = controlHub.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            double      globalAngle = allAngles.firstAngle;
+        if (INITIALIZE_IMU && controlHub!=null && controlHub.initialized) {
             telemetry.addData("IMU angle:", " (%.2f)", globalAngle);
         }
     }

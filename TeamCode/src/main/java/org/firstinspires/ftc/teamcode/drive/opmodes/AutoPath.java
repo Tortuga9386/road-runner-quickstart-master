@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.drive.opmodes;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -161,8 +160,9 @@ public class AutoPath {
                 startPose = new Pose2d(-60.0,-20,0);
                 mecanumDrive.setPoseEstimate(startPose);
                 driveToWobbleDrop = mecanumDrive.trajectoryBuilder(startPose)
-                        .splineTo(new Vector2d(48.0, -20.0), 0)
-                        .splineTo(new Vector2d(60.0, -50.0), 0)
+                        .splineTo(new Vector2d(48.0, -20.0), 0) // keep
+                        .splineTo(new Vector2d(60.0, -50.0), 0) // change
+                        //add temporal markers
                         .build();
 
                 driveToShoot = mecanumDrive.trajectoryBuilder(driveToWobbleDrop.end())
@@ -181,7 +181,7 @@ public class AutoPath {
                         .strafeTo(new Vector2d(12.0, -40.0))
                         .addTemporalMarker(0, () -> {
                             //Stop any activity on way to park
-                            robotBase.shooter.triggerstop();
+                            robotBase.shooter.triggerStop();
                             robotBase.shooter.stop();
                         })
                         .build();
@@ -211,7 +211,7 @@ public class AutoPath {
                         .strafeTo(new Vector2d(12.0, -40.0))
                         .addTemporalMarker(0, () -> {
                             //Stop any activity on way to park
-                            robotBase.shooter.triggerstop();
+                            robotBase.shooter.triggerStop();
                             robotBase.shooter.stop();
                         })
                         .build();
@@ -241,7 +241,7 @@ public class AutoPath {
                         .strafeTo(new Vector2d(12.0, -40.0))
                         .addTemporalMarker(0, () -> {
                             //Stop any activity on way to park
-                            robotBase.shooter.triggerstop();
+                            robotBase.shooter.triggerStop();
                             robotBase.shooter.stop();
                         })
                         .build();
@@ -269,7 +269,7 @@ public class AutoPath {
                         })
                         .addTemporalMarker(2.0, () -> {
                             //Dump that wobble!
-                            robotBase.lift.setDropPosition();
+                            robotBase.lift.setDropSoftPosition();
                         })
                         .addTemporalMarker(2.8, () -> {
                             //Dump that wobble!
@@ -293,7 +293,7 @@ public class AutoPath {
                         .strafeTo(new Vector2d(12.0, -40.0))
                         .addTemporalMarker(0, () -> {
                             //Stop any activity on way to park
-                            robotBase.shooter.triggerstop();
+                            robotBase.shooter.triggerStop();
                             robotBase.shooter.stop();
                         })
                         .build();
@@ -315,7 +315,7 @@ public class AutoPath {
                         })
                         .addTemporalMarker(2.0, () -> {
                             //Dump that wobble!
-                            robotBase.lift.setDropPosition();
+                            robotBase.lift.setDropSoftPosition();
                         })
                         .addTemporalMarker(2.3, () -> {
                             //Dump that wobble!
@@ -339,7 +339,7 @@ public class AutoPath {
                         .strafeTo(new Vector2d(12.0, -40.0))
                         .addTemporalMarker(0, () -> {
                             //Stop any activity on way to park
-                            robotBase.shooter.triggerstop();
+                            robotBase.shooter.triggerStop();
                             robotBase.shooter.stop();
                         })
                         .build();
@@ -363,7 +363,7 @@ public class AutoPath {
                         })
                         .addTemporalMarker(2.0, () -> {
                             //Dump that wobble!
-                            robotBase.lift.setDropPosition();
+                            robotBase.lift.setDropSoftPosition();
                         })
                         .addTemporalMarker(2.1, () -> {
                             //Dump that wobble!
@@ -387,7 +387,7 @@ public class AutoPath {
                         .strafeTo(new Vector2d(12.0, -40.0))
                         .addTemporalMarker(0, () -> {
                             //Stop any activity on way to park
-                            robotBase.shooter.triggerstop();
+                            robotBase.shooter.triggerStop();
                             robotBase.shooter.stop();
                         })
                         .build();

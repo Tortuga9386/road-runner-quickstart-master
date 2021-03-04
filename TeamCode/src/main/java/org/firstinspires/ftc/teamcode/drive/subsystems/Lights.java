@@ -9,13 +9,13 @@ import org.firstinspires.ftc.teamcode.drive.opmodes.RobotBase;
 public class Lights {
     protected HardwareMap hardwareMap;
     public Telemetry telemetry;
-    private RobotBase opMode;
+    private RobotBase robotBase;
     public RevBlinkinLedDriver blinkinLedDriver;
 
     public Lights(HardwareMap hardwareMap, RobotBase opMode) {
         this.hardwareMap = hardwareMap;
-        this.telemetry = opMode.telemetry;
-        this.opMode = opMode;
+        this.robotBase = opMode;
+        this.telemetry = robotBase.telemetry;
         initHardware();
     }
 
