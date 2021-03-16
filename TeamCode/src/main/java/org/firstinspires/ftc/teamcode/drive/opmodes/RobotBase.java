@@ -35,7 +35,7 @@ public class RobotBase extends OpMode
     //Make subsystems available to all class extensions
     public MenuController menu_controller;
     public Drive drive;
-    public ArcRoboticsDrive arcDrive;
+    public DriveArcRobotics driveArcRobotics;
     public Intake intake;
     public Shooter shooter;
     public Lift lift;
@@ -61,7 +61,7 @@ public class RobotBase extends OpMode
         menu_controller = new MenuController(new Calibration());
 
         drive = new Drive(hardwareMap, this);
-        arcDrive = new ArcRoboticsDrive(hardwareMap, this);
+        driveArcRobotics = new DriveArcRobotics(hardwareMap, this);
         intake = new Intake(hardwareMap, this);
         shooter = new Shooter(hardwareMap, this);
         lift = new Lift(hardwareMap, this);
@@ -119,8 +119,8 @@ public class RobotBase extends OpMode
             drive.stop();
         }
 
-        if (arcDrive != null) {
-            arcDrive.stop();
+        if (driveArcRobotics != null) {
+            driveArcRobotics.stop();
         }
 
         if (webcam != null && webcam.initialized) {

@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.drive.opmodes.RobotBase;
 
 
-public class ArcRoboticsDrive {
+public class DriveArcRobotics {
     protected HardwareMap hardwareMap;
     public Telemetry telemetry;
     private RobotBase robotBase;
@@ -21,7 +21,7 @@ public class ArcRoboticsDrive {
     public Motor rightRearWheel;
     public boolean turtleMode = false;
 
-    public ArcRoboticsDrive(HardwareMap hardwareMap, RobotBase opMode) {
+    public DriveArcRobotics(HardwareMap hardwareMap, RobotBase opMode) {
         this.hardwareMap = hardwareMap;
         this.robotBase = opMode;
         this.telemetry = robotBase.telemetry;

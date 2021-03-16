@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.opmodes.MainAutonOp.PathName;
+import static org.firstinspires.ftc.teamcode.drive.subsystems.GlobalVar.*;
 
 public class AutoPath {
     private HardwareMap hardwareMap;
@@ -33,7 +34,8 @@ public class AutoPath {
             BLUE_LEFT_QUAD,BLUE_LEFT_SINGLE,BLUE_LEFT_NONE,
             BLUE_RIGHT_QUAD,BLUE_RIGHT_SINGLE,BLUE_RIGHT_NONE,
             RED_LEFT_QUAD,RED_LEFT_SINGLE,RED_LEFT_NONE,
-            RED_RIGHT_QUAD,RED_RIGHT_SINGLE,RED_RIGHT_NONE
+            RED_RIGHT_QUAD,RED_RIGHT_SINGLE,RED_RIGHT_NONE,
+            RED_GO_SHOOT, BLUE_GO_SHOOT
         */
         switch (pathName){
 
@@ -390,6 +392,32 @@ public class AutoPath {
                             robotBase.shooter.triggerStop();
                             robotBase.shooter.stop();
                         })
+                        .build();
+                break;
+
+            /***************************************************************************
+
+             GO_SHOOT_RED - Auto alignment to shoot in TeleOp
+
+             ***************************************************************************/
+            case RED_GO_SHOOT:
+                //Only driveToShoot needs actual directions
+                startPose = getPose();
+                mecanumDrive.setPoseEstimate(startPose);
+                driveToWobbleDrop = mecanumDrive.trajectoryBuilder(startPose)
+                        .lineTo(new Vector2d(1, 1))
+                        .build();
+
+                driveToShoot = mecanumDrive.trajectoryBuilder(startPose)
+                        .strafeTo(new Vector2d(0.0, -40.0))
+                        .addTemporalMarker(0.1, () -> {
+                            //Start shooter on the way
+                            robotBase.shooter.run();
+                        })
+                        .build();
+
+                driveToPark = mecanumDrive.trajectoryBuilder(startPose)
+                        .lineTo(new Vector2d(1, 1))
                         .build();
                 break;
 

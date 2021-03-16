@@ -1,12 +1,16 @@
 package org.firstinspires.ftc.teamcode.drive.opmodes;
 
+import java.lang.Math;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.drive.subsystems.LocalGamepad;
+import static org.firstinspires.ftc.teamcode.drive.subsystems.GlobalVar.*;
 
 @TeleOp(name="TeleOp", group="teleop")
 public class MainTeleOp extends RobotBase
@@ -17,6 +21,8 @@ public class MainTeleOp extends RobotBase
     protected boolean       INITIALIZE_IMU = true;
     protected double        globalAngle = 0.0;
 
+    //Keep track of where we are, this is necessary for the alignToShoot function
+    StandardTrackingWheelLocalizer rrLocalizer;
 
     public MainTeleOp() {}
     
@@ -28,6 +34,10 @@ public class MainTeleOp extends RobotBase
         super.init();
         localGamepad1 = new LocalGamepad(gamepad1);
         localGamepad2 = new LocalGamepad(gamepad2);
+        rrLocalizer   = new StandardTrackingWheelLocalizer(hardwareMap);
+
+        //Set your initial pose from position stored from AutoOp
+        rrLocalizer.setPoseEstimate(getPose());
         telemetry.addData("Status", "Initialized");
     }
 
@@ -51,10 +61,9 @@ public class MainTeleOp extends RobotBase
      */
     @Override
     public void loop() {
+        telemetry.addData("Status", "Run Time:" + runtime.toString());
         localGamepad1.update();
         localGamepad2.update();
-
-        telemetry.addData("Status", "Run Time:" + runtime.toString());
 
         drive_loop();
         intake_loop();
@@ -66,7 +75,7 @@ public class MainTeleOp extends RobotBase
     }
 
     protected void drive_loop() {
-        
+
         if (turtleToggleUpdate + Calibration.MIN_TOGGLE_TIME<=runtime.seconds()) {
             if (gamepad1.a && !this.turtleMode){
                 updateTurtleMode(true);
@@ -78,23 +87,35 @@ public class MainTeleOp extends RobotBase
         }
         telemetry.addData("Turtle Mode", this.turtleMode);
         
+        // Make sure to call myLocalizer.update() on *every* loop
+        // Increasing loop time by utilizing bulk reads and minimizing writes will increase your odometry accuracy
+        rrLocalizer.update();
+        setPose(rrLocalizer.getPoseEstimate()); //Store pose for future interactions
+        if (gamepad1.b && gamepad1.y) {
+            drive.alignToShoot();
+        } //move this to an case below with drive modes to block drivers from interrupting?
+
         //Use localGamepad1.XasCircle and localGamepad1.YasCircle to prevent skewing in corners of joystick square
         telemetry.addData("Drive Mode", driveMode.toString());
-        if (driveMode == DriveMode.ARC_DRIVE_ROBOT) {
-            arcDrive.driveRobotCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x);
-        } else if (driveMode == DriveMode.ARC_DRIVE_FIELD) {
-            arcDrive.driveFieldCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x, globalAngle);
-        } else {
-            drive.driveRobotCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x);
+        switch (driveMode) {
+            case ARC_DRIVE_ROBOT:
+                driveArcRobotics.driveRobotCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x);
+                break;
+            case ARC_DRIVE_FIELD:
+                driveArcRobotics.driveFieldCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x, globalAngle);
+                break;
+            case ORIGINAL_CRISPY:
+            default:
+                drive.driveRobotCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x);
         }
-        if (gamepad1.b && gamepad1.y) {
+        if (false) { //button combination to rotate through drive modes, really shouldnt be doing this in a match!
             //driveMode = getNextDriveMode(driveMode);
         }
     }
     public void updateTurtleMode(boolean newTurtleMode) {
         this.turtleMode = newTurtleMode;
         if (drive != null)    { drive.turtleMode  = newTurtleMode; }
-        if (arcDrive != null) { arcDrive.turtleMode = newTurtleMode; }
+        if (driveArcRobotics != null) { driveArcRobotics.turtleMode = newTurtleMode; }
     }
     public DriveMode getNextDriveMode(DriveMode oldDriveMode) {
         int index = oldDriveMode.ordinal();
@@ -208,6 +229,14 @@ public class MainTeleOp extends RobotBase
     }
 
     protected void telemetry_loop() {
+
+        if (rrLocalizer!= null) {
+            Pose2d currentPose = rrLocalizer.getPoseEstimate();
+            telemetry.addData("x", currentPose.getX());
+            telemetry.addData("y", currentPose.getY());
+            telemetry.addData("heading radians", currentPose.getHeading());
+            telemetry.addData("heading degrees", Math.toDegrees(currentPose.getHeading()));
+        }
 
         if (INITIALIZE_LSA && localizationSA!= null && localizationSA.initialized) {
             // Show the elapsed run time, magnitude, direction and wheel power.

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.drive.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -13,6 +14,8 @@ import org.firstinspires.ftc.teamcode.drive.opmodes.RobotBase;
 
 import java.util.Arrays;
 import java.util.Collections;
+
+import static org.firstinspires.ftc.teamcode.drive.subsystems.GlobalVar.*;
 
 public class Drive {
     public static boolean RAMP_DRIVE_POWER      = true;
@@ -31,15 +34,20 @@ public class Drive {
     private double prevRFWPower = 0;
     private double prevLFWPower = 0;
 
-    public MainAutonOp.PathName pathName = MainAutonOp.PathName.GO_SHOOT;
     public AutoPath autoPath;
     public SampleMecanumDrive rrdrive;
+
+    private final ElapsedTime time = new ElapsedTime();
 
     public Drive(HardwareMap hardwareMap, RobotBase opMode) {
         this.hardwareMap = hardwareMap;
         this.robotBase = opMode;
         this.telemetry = robotBase.telemetry;
         this.util = new Util();
+
+        rrdrive = new SampleMecanumDrive(this.hardwareMap);
+        autoPath = new AutoPath(this.hardwareMap,this.robotBase);
+
         initHardware();
     }
 
@@ -190,6 +198,26 @@ public class Drive {
             delta = -maxRamp;
         }
         return oldVal + delta;
+    }
+
+    public void alignToShoot() {
+
+        String pathNameAsString = getAllianceColor() + "_GO_SHOOT";
+        MainAutonOp.PathName pathName = MainAutonOp.PathName.valueOf(pathNameAsString);
+
+        autoPath.getAutoPaths(pathName);
+        if (!rrdrive.isBusy()) {
+            telemetry.addData("Starting " + pathName.toString() + " autopath: ", time.seconds());
+            try {
+                rrdrive.setPoseEstimate(autoPath.startPose);
+                rrdrive.followTrajectory(autoPath.driveToShoot);
+            } catch (Exception e) {
+                telemetry.addData("Error running ", pathName.toString() + " driveToShoot");
+                telemetry.addData("Exception Message: ", e.toString());
+            }
+        } else {
+            telemetry.addData("rrdrive was busy! ", time.seconds());
+        }
     }
 
     public void stop() {

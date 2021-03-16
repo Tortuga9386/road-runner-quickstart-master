@@ -10,6 +10,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import static org.firstinspires.ftc.teamcode.drive.subsystems.GlobalVar.*;
 
 import static org.firstinspires.ftc.teamcode.drive.opmodes.MainAutonOp.State.*;
 
@@ -41,11 +42,11 @@ public class MainAutonOp extends RobotBase {
     public StartPosition startPosition = StartPosition.NONE;
 
     public enum PathName {
-        GO_SHOOT,
         BLUE_LEFT_QUAD,BLUE_LEFT_SINGLE,BLUE_LEFT_NONE,
         BLUE_RIGHT_QUAD,BLUE_RIGHT_SINGLE,BLUE_RIGHT_NONE,
         RED_LEFT_QUAD,RED_LEFT_SINGLE,RED_LEFT_NONE,
-        RED_RIGHT_QUAD,RED_RIGHT_SINGLE,RED_RIGHT_NONE
+        RED_RIGHT_QUAD,RED_RIGHT_SINGLE,RED_RIGHT_NONE,
+        RED_GO_SHOOT, BLUE_GO_SHOOT
     }
     public PathName pathName;
     public AutoPath autoPath;
@@ -74,6 +75,7 @@ public class MainAutonOp extends RobotBase {
         rrdrive = new SampleMecanumDrive(hardwareMap);
         autoPath = new AutoPath(hardwareMap,this);
 
+        setStartPosisition(startPosition); //This is the enum startPosition above, which will be passed to TeleOp
         telemetry.addData("Start Position", startPosition.toString());
         telemetry.addData("State", "READY");
         currentState = BEGIN;
@@ -224,6 +226,7 @@ public class MainAutonOp extends RobotBase {
 
         //Update drive continuously in the background, regardless of state
         rrdrive.update();
+        setPose(rrdrive.getPoseEstimate()); //This will be passed to TeleOp
 
         // Read current pose
         Pose2d poseEstimate = rrdrive.getPoseEstimate();
