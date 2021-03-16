@@ -15,9 +15,8 @@ public class MainTeleOp extends RobotBase
     private   LocalGamepad  localGamepad1, localGamepad2;
     private   double        turtleToggleUpdate = 0.0;
     protected boolean       INITIALIZE_IMU = true;
-    protected boolean       ARC_DRIVE_ROBOT = false;
-    protected boolean       ARC_DRIVE_FIELD = false;
     protected double        globalAngle = 0.0;
+
 
     public MainTeleOp() {}
     
@@ -77,27 +76,32 @@ public class MainTeleOp extends RobotBase
                 turtleToggleUpdate = runtime.seconds();
             }
         }
-        telemetry.addData("Turtle Mode On", this.turtleMode);
+        telemetry.addData("Turtle Mode", this.turtleMode);
         
         //Use localGamepad1.XasCircle and localGamepad1.YasCircle to prevent skewing in corners of joystick square
-//        if (ARC_DRIVE_ROBOT && arcDrive != null) {
-//            telemetry.addData("Drive Mode", "arcDrive.driveRobotCentric");
-//            arcDrive.driveRobotCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x);
-//        } else if (ARC_DRIVE_FIELD && arcDrive != null) {
-//            telemetry.addData("Drive Mode", "arcDrive.driveFieldCentric");
-//            arcDrive.driveFieldCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x, globalAngle);
-//        } else {
-            telemetry.addData("Drive Mode", "Original Crispy");
+        telemetry.addData("Drive Mode", driveMode.toString());
+        if (driveMode == DriveMode.ARC_DRIVE_ROBOT) {
+            arcDrive.driveRobotCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x);
+        } else if (driveMode == DriveMode.ARC_DRIVE_FIELD) {
+            arcDrive.driveFieldCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x, globalAngle);
+        } else {
             drive.driveRobotCentric(localGamepad1.XasCircle, localGamepad1.YasCircle, gamepad1.right_stick_x);
-//        }
+        }
+        if (gamepad1.b && gamepad1.y) {
+            //driveMode = getNextDriveMode(driveMode);
+        }
     }
     public void updateTurtleMode(boolean newTurtleMode) {
         this.turtleMode = newTurtleMode;
-        if (arcDrive!=null) {
-            //arcDrive.turtleMode = newTurtleMode;
-        } else {
-            drive.turtleMode  = newTurtleMode;
-        }
+        if (drive != null)    { drive.turtleMode  = newTurtleMode; }
+        if (arcDrive != null) { arcDrive.turtleMode = newTurtleMode; }
+    }
+    public DriveMode getNextDriveMode(DriveMode oldDriveMode) {
+        int index = oldDriveMode.ordinal();
+        int nextIndex = index + 1;
+        DriveMode[] driveModes = DriveMode.values();
+        nextIndex %= driveModes.length;
+        return driveModes[nextIndex];
     }
 
     protected void intake_loop() {
@@ -114,12 +118,20 @@ public class MainTeleOp extends RobotBase
         }
 
         if (gamepad1.b) {
-            intake.setIntakeFlipperUp();
-            telemetry.addData("Intake Flipper", "UP");
-        } else {
             intake.setIntakeFlipperDown();
+            telemetry.addData("Intake Flipper", "UP");
+        }
+        if (gamepad1.y) {
+            intake.setIntakeFlipperUp();
             telemetry.addData("Intake Flipper", "DOWN");
         }
+//        if (gamepad1.b == true) {
+//            intake.setIntakeFlipperUp();
+//            telemetry.addData("Intake Flipper", "UP");
+//        } else if(gamepad1.b == false) {
+//            intake.setIntakeFlipperDown();
+//            telemetry.addData("Intake Flipper", "DOWN");
+//        }
 
     }
 

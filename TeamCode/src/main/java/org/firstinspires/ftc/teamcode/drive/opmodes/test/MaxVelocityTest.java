@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp(name="MaxVelocityTest", group = "TestCode")
-//@Disabled
+@Disabled
 
 public class MaxVelocityTest extends LinearOpMode {
 

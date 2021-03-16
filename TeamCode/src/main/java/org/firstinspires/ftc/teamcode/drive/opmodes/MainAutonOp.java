@@ -41,6 +41,7 @@ public class MainAutonOp extends RobotBase {
     public StartPosition startPosition = StartPosition.NONE;
 
     public enum PathName {
+        GO_SHOOT,
         BLUE_LEFT_QUAD,BLUE_LEFT_SINGLE,BLUE_LEFT_NONE,
         BLUE_RIGHT_QUAD,BLUE_RIGHT_SINGLE,BLUE_RIGHT_NONE,
         RED_LEFT_QUAD,RED_LEFT_SINGLE,RED_LEFT_NONE,

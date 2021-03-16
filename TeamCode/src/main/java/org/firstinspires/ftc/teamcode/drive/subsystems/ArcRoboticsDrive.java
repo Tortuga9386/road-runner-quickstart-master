@@ -30,61 +30,45 @@ public class ArcRoboticsDrive {
 
     protected void initHardware() {
         leftFrontWheel = new Motor(hardwareMap, "LeftFrontWheel");
-        leftFrontWheel.setInverted(true);
-        leftFrontWheel.stopMotor();
-        leftFrontWheel.resetEncoder();
         leftFrontWheel.setRunMode(Motor.RunMode.RawPower);
         leftFrontWheel.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         rightFrontWheel = new Motor(hardwareMap, "RightFrontWheel");
-        rightFrontWheel.setInverted(false);
-        rightFrontWheel.stopMotor();
-        rightFrontWheel.resetEncoder();
         rightFrontWheel.setRunMode(Motor.RunMode.RawPower);
         rightFrontWheel.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         leftRearWheel = new Motor(hardwareMap, "LeftRearWheel");
-        leftRearWheel.setInverted(true);
-        leftRearWheel.stopMotor();
-        leftRearWheel.resetEncoder();
         leftRearWheel.setRunMode(Motor.RunMode.RawPower);
         leftRearWheel.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         rightRearWheel = new Motor(hardwareMap, "RightRearWheel");
-        rightRearWheel.setInverted(false);
-        rightRearWheel.stopMotor();
-        rightRearWheel.resetEncoder();
         rightRearWheel.setRunMode(Motor.RunMode.RawPower);
         rightRearWheel.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
-        //mecanumDrive = new MecanumDrive(leftFrontWheel, rightFrontWheel, leftRearWheel, rightRearWheel);
-        turtleMode = false;
+        mecanumDrive = new MecanumDrive(leftFrontWheel, rightFrontWheel, leftRearWheel, rightRearWheel);
+        mecanumDrive.setRightSideInverted(true);
     }
 
-    /*
-     * basicDrive takes inputs directly from gamepad and translates them to chassis movement.
-     * This is sometimes called an arcade drive.
-     */
     public void driveRobotCentric(double moveX, double moveY, double moveRotation) {
-        //setTurtleMode();
-        //mecanumDrive.driveRobotCentric(moveX, moveY, moveRotation);
+        setTurtleMode();
+        mecanumDrive.driveRobotCentric(moveX, moveY, moveRotation,true);
     }
 
     public void driveFieldCentric(double moveX, double moveY, double moveRotation, double heading) {
-        //setTurtleMode();
-        //mecanumDrive.driveFieldCentric(moveX, moveY, moveRotation, heading);
+        setTurtleMode();
+        mecanumDrive.driveFieldCentric(moveX, moveY, moveRotation, Math.toRadians(heading));
     }
 
     public void setTurtleMode() {
-//        if (turtleMode) {
-//            mecanumDrive.setMaxSpeed(0.5);
-//        } else {
-//            mecanumDrive.setMaxSpeed(1.0);
-//        }
+        if (turtleMode) {
+            mecanumDrive.setMaxSpeed(0.5);
+        } else {
+            mecanumDrive.setMaxSpeed(1.0);
+        }
     }
 
     public void stop() {
-        //mecanumDrive.stop();
+        mecanumDrive.stop();
     }
 
     public void reset() {

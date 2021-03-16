@@ -5,7 +5,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.opmodes.AutoPath;
 import org.firstinspires.ftc.teamcode.drive.opmodes.Calibration;
+import org.firstinspires.ftc.teamcode.drive.opmodes.MainAutonOp;
 import org.firstinspires.ftc.teamcode.drive.opmodes.RobotBase;
 
 import java.util.Arrays;
@@ -27,6 +30,10 @@ public class Drive {
     private double prevLRWPower = 0;
     private double prevRFWPower = 0;
     private double prevLFWPower = 0;
+
+    public MainAutonOp.PathName pathName = MainAutonOp.PathName.GO_SHOOT;
+    public AutoPath autoPath;
+    public SampleMecanumDrive rrdrive;
 
     public Drive(HardwareMap hardwareMap, RobotBase opMode) {
         this.hardwareMap = hardwareMap;

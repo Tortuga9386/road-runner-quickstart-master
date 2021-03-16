@@ -14,8 +14,6 @@ import java.util.List;
  * The various subsystems classes are located in the subsystem folder.
  * This code is used by all the other opmodes.
  *
- * This hardware class assumes the following device names have been configured on the robot.
- *
  */
 @Disabled
 public class RobotBase extends OpMode
@@ -25,11 +23,14 @@ public class RobotBase extends OpMode
     protected boolean INITIALIZE_WEBCAM         = false;
     protected boolean INITIALIZE_IMU            = false;
     protected boolean INITIALIZE_LSA            = false;
-    public    boolean ARC_DRIVE_ROBOT           = false;
-    public    boolean ARC_DRIVE_FIELD           = false;
     public    boolean turtleMode                = false;
 
-
+    public enum DriveMode {
+        ORIGINAL_CRISPY,
+        ARC_DRIVE_ROBOT,
+        ARC_DRIVE_FIELD
+    }
+    public DriveMode driveMode = DriveMode.ORIGINAL_CRISPY;
 
     //Make subsystems available to all class extensions
     public MenuController menu_controller;
@@ -58,11 +59,9 @@ public class RobotBase extends OpMode
 
         //Initialize subsystems
         menu_controller = new MenuController(new Calibration());
-//        if (ARC_DRIVE_ROBOT || ARC_DRIVE_FIELD) {
-//            arcDrive = new ArcRoboticsDrive(hardwareMap, this);
-//        } else {
-            drive = new Drive(hardwareMap, this);
-//        }
+
+        drive = new Drive(hardwareMap, this);
+        arcDrive = new ArcRoboticsDrive(hardwareMap, this);
         intake = new Intake(hardwareMap, this);
         shooter = new Shooter(hardwareMap, this);
         lift = new Lift(hardwareMap, this);
@@ -111,11 +110,18 @@ public class RobotBase extends OpMode
      */
     @Override
     public void stop() {
-        drive.stop();
         intake.stop();
         shooter.stop();
         lift.stop();
         lights.stop();
+
+        if (drive != null) {
+            drive.stop();
+        }
+
+        if (arcDrive != null) {
+            arcDrive.stop();
+        }
 
         if (webcam != null && webcam.initialized) {
             webcam.stop();

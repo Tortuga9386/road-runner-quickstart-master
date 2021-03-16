@@ -38,7 +38,7 @@ public class Intake {
     }
 
     public void run() {
-        intakeMotor.set(-1.0);
+        intakeMotor.set(-.9);
     }
 
     public boolean isBusy() {
